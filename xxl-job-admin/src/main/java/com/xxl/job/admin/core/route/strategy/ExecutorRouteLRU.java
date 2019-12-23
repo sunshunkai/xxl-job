@@ -61,7 +61,7 @@ public class ExecutorRouteLRU extends ExecutorRouter {
             }
         }
 
-        // load
+        // load 链表的第一个为最久未使用的 JOB
         String eldestKey = lruItem.entrySet().iterator().next().getKey();
         String eldestValue = lruItem.get(eldestKey);
         return eldestValue;

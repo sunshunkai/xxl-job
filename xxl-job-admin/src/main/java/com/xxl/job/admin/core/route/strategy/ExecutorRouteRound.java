@@ -11,11 +11,14 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Created by xuxueli on 17/3/10.
+ * 轮询
  */
 public class ExecutorRouteRound extends ExecutorRouter {
 
+    // key:jobId , value:执行次数
     private static ConcurrentMap<Integer, Integer> routeCountEachJob = new ConcurrentHashMap<Integer, Integer>();
     private static long CACHE_VALID_TIME = 0;
+
     private static int count(int jobId) {
         // cache clear
         if (System.currentTimeMillis() > CACHE_VALID_TIME) {
@@ -32,7 +35,10 @@ public class ExecutorRouteRound extends ExecutorRouter {
 
     @Override
     public ReturnT<String> route(TriggerParam triggerParam, List<String> addressList) {
-        String address = addressList.get(count(triggerParam.getJobId())%addressList.size());
+        String address = addressList.get(
+                // 次数取模之后的机器,轮询
+                count(triggerParam.getJobId())%addressList.size()
+        );
         return new ReturnT<String>(address);
     }
 

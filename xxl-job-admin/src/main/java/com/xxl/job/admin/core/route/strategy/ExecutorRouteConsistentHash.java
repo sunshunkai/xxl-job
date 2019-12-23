@@ -60,6 +60,7 @@ public class ExecutorRouteConsistentHash extends ExecutorRouter {
 
         // ------A1------A2-------A3------
         // -----------J1------------------
+        // key: addressHash , value : address
         TreeMap<Long, String> addressRing = new TreeMap<Long, String>();
         for (String address: addressList) {
             for (int i = 0; i < VIRTUAL_NODE_NUM; i++) {
@@ -69,10 +70,14 @@ public class ExecutorRouteConsistentHash extends ExecutorRouter {
         }
 
         long jobHash = hash(String.valueOf(jobId));
+        // 获取 TreeMap 中 key 大于 jobHash 的集合
         SortedMap<Long, String> lastRing = addressRing.tailMap(jobHash);
+        // 取出 addressRing 中有比 jobHash 大的直接取出第一个
         if (!lastRing.isEmpty()) {
             return lastRing.get(lastRing.firstKey());
         }
+        // 如果没有直接取出 addressRing 的第一个
+        // 反正最终的效果是在 Hash 环上,顺时针拿离 jobHash 最近的一个
         return addressRing.firstEntry().getValue();
     }
 

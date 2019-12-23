@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentMap;
  * Created by xuxueli on 17/3/10.
  */
 public class ExecutorRouteLFU extends ExecutorRouter {
-
+    // key:jobId   value: key:address,value:执行次数
     private static ConcurrentMap<Integer, HashMap<String, Integer>> jobLfuMap = new ConcurrentHashMap<Integer, HashMap<String, Integer>>();
     private static long CACHE_VALID_TIME = 0;
 
@@ -35,13 +35,13 @@ public class ExecutorRouteLFU extends ExecutorRouter {
             jobLfuMap.putIfAbsent(jobId, lfuItemMap);   // 避免重复覆盖
         }
 
-        // put new
+        // put new 【初始化时,给定一个随机值】
         for (String address: addressList) {
             if (!lfuItemMap.containsKey(address) || lfuItemMap.get(address) >1000000 ) {
                 lfuItemMap.put(address, new Random().nextInt(addressList.size()));  // 初始化时主动Random一次，缓解首次压力
             }
         }
-        // remove old
+        // remove old 【如果执行地址列表不在缓存中,则删除】
         List<String> delKeys = new ArrayList<>();
         for (String existKey: lfuItemMap.keySet()) {
             if (!addressList.contains(existKey)) {
@@ -55,6 +55,7 @@ public class ExecutorRouteLFU extends ExecutorRouter {
         }
 
         // load least userd count address
+        // 加载最少用户数地址
         List<Map.Entry<String, Integer>> lfuItemList = new ArrayList<Map.Entry<String, Integer>>(lfuItemMap.entrySet());
         Collections.sort(lfuItemList, new Comparator<Map.Entry<String, Integer>>() {
             @Override
@@ -62,9 +63,10 @@ public class ExecutorRouteLFU extends ExecutorRouter {
                 return o1.getValue().compareTo(o2.getValue());
             }
         });
-
+        // 获取执行次数最少的一个任务
         Map.Entry<String, Integer> addressItem = lfuItemList.get(0);
         String minAddress = addressItem.getKey();
+        // 执行完之后 +1
         addressItem.setValue(addressItem.getValue() + 1);
 
         return addressItem.getKey();
