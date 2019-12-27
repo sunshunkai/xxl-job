@@ -218,6 +218,7 @@ public final class CronExpression implements Serializable, Cloneable {
     protected static final Map<String, Integer> monthMap = new HashMap<String, Integer>(20);
     protected static final Map<String, Integer> dayMap = new HashMap<String, Integer>(60);
     static {
+        // 月份
         monthMap.put("JAN", 0);
         monthMap.put("FEB", 1);
         monthMap.put("MAR", 2);
@@ -231,6 +232,7 @@ public final class CronExpression implements Serializable, Cloneable {
         monthMap.put("NOV", 10);
         monthMap.put("DEC", 11);
 
+        // 星期
         dayMap.put("SUN", 1);
         dayMap.put("MON", 2);
         dayMap.put("TUE", 3);
@@ -463,7 +465,7 @@ public final class CronExpression implements Serializable, Cloneable {
             if (years == null) {
                 years = new TreeSet<Integer>();
             }
-
+            // 相当于刻度尺,从秒开始解析
             int exprOn = SECOND;
 
             StringTokenizer exprsTok = new StringTokenizer(expression, " \t",
@@ -473,10 +475,12 @@ public final class CronExpression implements Serializable, Cloneable {
                 String expr = exprsTok.nextToken().trim();
 
                 // throw an exception if L is used with other days of the month
+                // 如果和一个月的其他日子一起使用，抛出一个异常
                 if(exprOn == DAY_OF_MONTH && expr.indexOf('L') != -1 && expr.length() > 1 && expr.contains(",")) {
                     throw new ParseException("Support for specifying 'L' and 'LW' with other days of the month is not implemented", -1);
                 }
                 // throw an exception if L is used with other days of the week
+                // 如果和一周中的其他日子一起使用，抛出一个异常
                 if(exprOn == DAY_OF_WEEK && expr.indexOf('L') != -1 && expr.length() > 1  && expr.contains(",")) {
                     throw new ParseException("Support for specifying 'L' with other days of the week is not implemented", -1);
                 }
@@ -523,6 +527,9 @@ public final class CronExpression implements Serializable, Cloneable {
         }
     }
 
+    /**
+     * 存储cron表达式
+     */
     protected int storeExpressionVals(int pos, String s, int type)
         throws ParseException {
 
